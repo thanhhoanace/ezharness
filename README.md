@@ -72,6 +72,41 @@ ezh replay  .harness/evidence/ledger.jsonl [--require-verifier] [--expect-tree <
 ezh version
 ```
 
+Remove the gate from a repo:
+
+```sh
+ezh uninstall            # reverse the wiring; PRESERVE evidence + telemetry (audit-safe)
+ezh uninstall --purge    # also remove the entire .harness/ (evidence ledger + run report)
+ezh uninstall --target <dir> [--purge]
+```
+
+`ezh uninstall` reverts `core.hooksPath` and the `git gate` alias and removes
+the install-created scaffold (`hooks/`, `bin/`, `AGENTS.md`, `config.json`,
+`install-manifest.json`). By default it **preserves** your contract, the
+evidence ledger + proofs, and the run report; `--purge` deletes the whole
+`.harness/` directory for a clean slate. It is idempotent and safe to run when
+already uninstalled.
+
+### Run report
+
+Every gate command (`check`, `verify`, `replay`, `attest`) passively appends one
+line to `.harness/run-report.jsonl` and regenerates `.harness/run-report.md`.
+This is observational telemetry: a failed telemetry write never affects the gate
+verdict.
+
+- `run-report.jsonl` — the source of truth: one compact JSON object per run with
+  `ts`, `command`, `verdict`, `exit_code`, `duration_ms`, `repo`, `branch`,
+  `actor`, `engine`, `risk`, `tree`, `task_id`, and `reason`.
+- `run-report.md` — a derived, agent-consumable summary regenerated from the
+  full JSONL on every run: **Totals** (runs/pass/block/warn by command),
+  **Per-ticket overhead** (per-branch runs, retries before first pass, total
+  gate duration, median/p90), and **Signals** mapping metrics to the project's
+  acceptance criteria (false-done caught, worker≠verifier, severity tiering,
+  per-ticket overhead, distinct passing actors).
+
+The telemetry is preserved across `ezh uninstall` and removed only with
+`--purge`.
+
 The pre-commit / pre-push hook runs `ezh replay --require-verifier` and blocks
 the commit unless the latest **verifier** verdict passes and covers the tree
 being committed. The actor who produced the worker proof must not be the

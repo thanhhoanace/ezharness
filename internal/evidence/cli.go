@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"time"
 )
 
 func Run(args []string, stdout io.Writer, stderr io.Writer) int {
@@ -52,7 +53,9 @@ func runCheckCommand(args []string, stdout io.Writer, stderr io.Writer) int {
 		return exitBlock
 	}
 
+	start := time.Now()
 	summary, err := RunCheck(*contractPath, *risk, *ledgerPath, *repoRoot)
+	recordRunReport(runReportContext{command: "check", risk: *risk, workspaceHint: *ledgerPath, repoRoot: *repoRoot}, summary, err, time.Since(start), start)
 	return emitResult(summary, err, *jsonOut, stdout, stderr)
 }
 
@@ -90,11 +93,13 @@ func runReplayCommand(args []string, stdout io.Writer, stderr io.Writer) int {
 
 	var summary ResultSummary
 	var err error
+	start := time.Now()
 	if requireVerifier {
 		summary, err = RunReplayRequireVerifier(ledgerPath, expectTree)
 	} else {
 		summary, err = RunReplay(ledgerPath)
 	}
+	recordRunReport(runReportContext{command: "replay", risk: "", workspaceHint: ledgerPath}, summary, err, time.Since(start), start)
 	return emitResult(summary, err, jsonOut, stdout, stderr)
 }
 
@@ -118,7 +123,9 @@ func runVerifyCommand(args []string, stdout io.Writer, stderr io.Writer) int {
 		return exitBlock
 	}
 
+	start := time.Now()
 	summary, err := RunVerify(ledgerPath)
+	recordRunReport(runReportContext{command: "verify", risk: "", workspaceHint: ledgerPath}, summary, err, time.Since(start), start)
 	return emitResult(summary, err, jsonOut, stdout, stderr)
 }
 
@@ -157,11 +164,14 @@ func runAttestCommand(args []string, stdout io.Writer, stderr io.Writer) int {
 		return exitBlock
 	}
 
+	start := time.Now()
 	checkSummary, checkErr := RunCheck(*contractPath, *risk, *ledgerPath, *repoRoot)
 	if checkErr != nil {
+		recordRunReport(runReportContext{command: "attest", risk: *risk, workspaceHint: *ledgerPath, repoRoot: *repoRoot}, checkSummary, checkErr, time.Since(start), start)
 		return emitResult(checkSummary, checkErr, *jsonOut, stdout, stderr)
 	}
 	verifySummary, verifyErr := RunVerify(*ledgerPath)
+	recordRunReport(runReportContext{command: "attest", risk: *risk, workspaceHint: *ledgerPath, repoRoot: *repoRoot}, verifySummary, verifyErr, time.Since(start), start)
 	return emitResult(verifySummary, verifyErr, *jsonOut, stdout, stderr)
 }
 

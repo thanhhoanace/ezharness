@@ -30,6 +30,8 @@ func main() {
 		usage(os.Stdout)
 	case "install":
 		os.Exit(runInstall(args[1:]))
+	case "uninstall":
+		os.Exit(runUninstall(args[1:]))
 	case "check", "verify", "replay", "attest":
 		os.Exit(evidence.Run(args, os.Stdout, os.Stderr))
 	default:
@@ -59,11 +61,33 @@ func runInstall(args []string) int {
 	return 0
 }
 
+// runUninstall parses the uninstall subcommand flags and reverses the install,
+// preserving evidence + telemetry unless --purge is given.
+func runUninstall(args []string) int {
+	flags := flag.NewFlagSet("uninstall", flag.ContinueOnError)
+	flags.SetOutput(os.Stderr)
+	target := flags.String("target", "", "repository root to uninstall from (default: git toplevel of the current directory)")
+	purge := flags.Bool("purge", false, "remove the entire .harness/ directory, including evidence ledger and run-report telemetry")
+	if err := flags.Parse(args); err != nil {
+		return 2
+	}
+	if flags.NArg() != 0 {
+		fmt.Fprintln(os.Stderr, "ezh uninstall: unexpected positional arguments")
+		return 2
+	}
+	if err := installer.Uninstall(installer.UninstallOptions{Target: *target, Purge: *purge}, os.Stdout, os.Stderr); err != nil {
+		fmt.Fprintf(os.Stderr, "ezh uninstall: %v\n", err)
+		return 1
+	}
+	return 0
+}
+
 func usage(w *os.File) {
 	fmt.Fprint(w, `ezh — ezHarness per-repo evidence gate ("done means done" at the git boundary)
 
 Usage:
-  ezh install [--target <dir>]
+  ezh install   [--target <dir>]
+  ezh uninstall [--target <dir>] [--purge]
   ezh attest  --contract <path> --risk <low|med|high> [--ledger <path>] [--json]
   ezh check   --contract <path> --risk <low|med|high> [--ledger <path>] [--json]
   ezh verify  <ledger> [--json]
