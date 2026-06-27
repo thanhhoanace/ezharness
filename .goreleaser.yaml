@@ -26,18 +26,15 @@ checksum:
   name_template: "checksums.txt"
 
 # Method 2: `brew install thanhhoanace/tap/ezharness`
-# Pushing the formula to the separate thanhhoanace/homebrew-tap repo needs a PAT
-# (the default GITHUB_TOKEN cannot write to another repo). Until that secret is
-# added, skip_upload keeps the release green and still builds the formula
-# artifact locally. To enable brew: add a HOMEBREW_TAP_TOKEN repo secret, set
-# `repository.token` below to `"{{ .Env.HOMEBREW_TAP_TOKEN }}"`, wire it in
-# .github/workflows/release.yml, and flip skip_upload to "false".
+# The formula is pushed to the separate thanhhoanace/homebrew-tap repo using the
+# HOMEBREW_TAP_TOKEN PAT (the default GITHUB_TOKEN cannot write cross-repo); the
+# token is wired in .github/workflows/release.yml.
 brews:
   - name: ezharness
-    skip_upload: "true"
     repository:
       owner: thanhhoanace
       name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     homepage: "https://github.com/thanhhoanace/ezharness"
     description: "Per-repo evidence gate for git — done means done."
     license: "MIT"
