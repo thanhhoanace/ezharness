@@ -47,6 +47,9 @@ release:
   github:
     owner: thanhhoanace
     name: ezharness
+  # Replace existing assets so a re-run (after fixing the brew token) is
+  # idempotent instead of failing with "asset already_exists".
+  mode: replace
 
 changelog:
   use: github
