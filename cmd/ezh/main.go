@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/thanhhoanace/ezharness/internal/evidence"
-	"github.com/thanhhoanace/ezharness/internal/installer"
+	"github.com/thanhhoanace/ezharness/v6/internal/evidence"
+	"github.com/thanhhoanace/ezharness/v6/internal/installer"
 )
 
 // version is overridden at release time via -ldflags "-X main.version=<tag>".

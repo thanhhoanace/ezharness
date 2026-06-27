@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/thanhhoanace/ezharness/internal/assets"
+	"github.com/thanhhoanace/ezharness/v6/internal/assets"
 )
 
 // verifyUndefined is the sentinel verify command written when no project verify

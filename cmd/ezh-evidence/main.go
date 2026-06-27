@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/thanhhoanace/ezharness/internal/evidence"
+	"github.com/thanhhoanace/ezharness/v6/internal/evidence"
 )
 
 func main() {

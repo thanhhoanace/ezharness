@@ -28,7 +28,7 @@ brew install thanhhoanace/tap/ezharness
 ### go install
 
 ```sh
-go install github.com/thanhhoanace/ezharness/cmd/ezh@latest
+go install github.com/thanhhoanace/ezharness/v6/cmd/ezh@latest
 ```
 
 ## Quick start
