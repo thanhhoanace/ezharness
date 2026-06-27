@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -eu
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+EZH_HOOK_REMOTE_NAME="${1:-origin}" \
+EZH_HOOK_REMOTE_URL="${2:-unknown}" \
+EZH_HOOK_STDIN="$(cat || true)" \
+exec "$SCRIPT_DIR/ezh-evidence-gate.sh" pre-push

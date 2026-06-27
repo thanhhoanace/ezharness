@@ -1,0 +1,56 @@
+# GoReleaser config — one `git tag vX.Y.Z` builds every platform, publishes a
+# GitHub Release (binaries + checksums), and updates the Homebrew tap.
+#   Local dry run: goreleaser release --snapshot --clean
+# Owner = thanhhoanace (change here if the GitHub org moves).
+version: 2
+project_name: ezharness
+
+builds:
+  - id: ezh
+    dir: "."                   # flat module: go.mod lives at repo root
+    main: ./cmd/ezh
+    binary: ezh
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+
+archives:
+  - id: ezh
+    formats: [tar.gz]
+    name_template: "ezh_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+# Method 2: `brew install thanhhoanace/tap/ezharness`
+# Pushing the formula to the separate thanhhoanace/homebrew-tap repo needs a PAT
+# (the default GITHUB_TOKEN cannot write to another repo). Until that secret is
+# added, skip_upload keeps the release green and still builds the formula
+# artifact locally. To enable brew: add a HOMEBREW_TAP_TOKEN repo secret, set
+# `repository.token` below to `"{{ .Env.HOMEBREW_TAP_TOKEN }}"`, wire it in
+# .github/workflows/release.yml, and flip skip_upload to "false".
+brews:
+  - name: ezharness
+    skip_upload: "true"
+    repository:
+      owner: thanhhoanace
+      name: homebrew-tap
+    homepage: "https://github.com/thanhhoanace/ezharness"
+    description: "Per-repo evidence gate for git — done means done."
+    license: "MIT"
+    install: |
+      bin.install "ezh"
+    test: |
+      system "#{bin}/ezh", "version"
+
+release:
+  github:
+    owner: thanhhoanace
+    name: ezharness
+
+changelog:
+  use: github
+  sort: asc
