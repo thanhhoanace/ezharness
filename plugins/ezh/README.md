@@ -12,6 +12,23 @@ ezh adds four things to every Claude Code session, in the terminal and in VS Cod
 The `ez-evidence` binary for macOS (arm64, amd64), Linux (amd64, arm64) and Windows (amd64)
 ships inside the plugin (`libexec/`). Nothing is downloaded at run time.
 
+## Source and rebuild
+
+The Go source of `ez-evidence` ships next to the binaries, in `source/ez-evidence/` (no
+dependencies outside the Go standard library). `libexec/BUILD` names the Go version and the
+sha256 of each binary. To rebuild one and compare, use that Go version and run, from this folder:
+
+```bash
+cd source/ez-evidence
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=false \
+  -ldflags "-s -w -buildid=" -o /tmp/ez-evidence-linux-amd64 ./cmd/ez-evidence
+shasum -a 256 /tmp/ez-evidence-linux-amd64    # equals the line in ../../libexec/BUILD
+```
+
+`GOOS`/`GOARCH` pairs: `darwin/arm64`, `darwin/amd64`, `linux/amd64`, `linux/arm64`,
+`windows/amd64` (output name ends in `.exe`). `source_commit` in `BUILD` is the commit of the
+development repository the tree was built from.
+
 ## Install
 
 ```text
