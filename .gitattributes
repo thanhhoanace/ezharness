@@ -1,0 +1,4 @@
+# The Claude Code plugin: hooks keep LF on Windows checkouts; binaries are never converted.
+plugins/** text=auto eol=lf
+plugins/ezh/libexec/** binary
+*.exe binary

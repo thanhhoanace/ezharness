@@ -1,0 +1,9 @@
+plugin_version=0.3.0
+source_commit=86e7162bb0a8d3a279e10877b579f0f285355f14
+source_dirty=false
+go=go1.26.2
+sha256 ez-evidence-darwin-arm64 2a8218f1bc381ead90807af6e08c3df38c98e30dea815618a664337b037c346c
+sha256 ez-evidence-darwin-amd64 e4cfd0e75fbc8a100d914193c6e83335f6b4ec130a30272bf181cf46ee5e9a4c
+sha256 ez-evidence-linux-amd64 51dffaff4e24aeda404d31630f1b94c5325362424881fdea5709e2f224a6d089
+sha256 ez-evidence-linux-arm64 dfb8a94dd7e8b6ec5029980e54885ff45814eab8674db367ff92224b79b0c44b
+sha256 ez-evidence-windows-amd64.exe 24d47fc44886d21020700817c1c8952869ceef9bdb3b87651f9bee678b19b8dc

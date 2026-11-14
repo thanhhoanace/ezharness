@@ -11,6 +11,18 @@ The whole tool ships as a single static binary, `ezh`, that embeds its hooks and
 templates. One `ezh install` wires a repo's git hooks, project contract, and the
 `git gate` convenience alias — no external files required.
 
+## Claude Code plugin
+
+```text
+/plugin marketplace add thanhhoanace/ezharness
+/plugin install ezh@ezharness
+/ez-doctor
+```
+
+The plugin (`plugins/ezh/`) brings the plan gate, the lesson index, the `ezh` skill and `/ez-doctor`
+to every Claude Code session on macOS, Linux and Windows (Git Bash). It ships the `ez-evidence`
+binary for each OS. See [plugins/ezh/README.md](plugins/ezh/README.md).
+
 ## Install
 
 ### curl | sh

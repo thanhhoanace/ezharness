@@ -1,0 +1,51 @@
+# path	group	home	note
+# One row per path ezHarness writes (ADR-0015). The longest matching row wins.
+# A path ending in "/" covers the folder; a trailing "*" is a prefix match.
+# group: A team knowledge · B raw proof · C personal · D tools · E telemetry
+# home:  repo-tracked (in git) · repo-local (main checkout, ignored) · repo-copy
+#        (managed copy in the repo) · machine · plugin · export (local, rows exported)
+.harness/project-contract.yaml	A	repo-tracked	the repo's contract
+.harness/lessons/	A	repo-tracked	reviewed lessons and their index
+.harness/lesson-owners.yaml	A	repo-tracked	which lessons this repo owns
+.harness/plans/	A	repo-tracked	plans and implementation notes
+.harness/plankit/PLAN-TEMPLATE.md	A	repo-tracked	seeded once, project-owned
+.harness/plankit/env-patterns	A	repo-tracked	seeded once, project-owned
+.harness/plankit/	D	repo-copy	managed plan tooling (plan-audit.sh)
+.harness/archkit/	A	repo-tracked	architecture rules, seeded once
+.harness/gardener/patterns.tsv	A	repo-tracked	project-owned gardener rules
+.harness/gardener/	B	repo-local	gardener run state
+.harness/AGENTS.md	D	repo-copy	managed pointer for agents
+.harness/bin/	D	repo-copy	the ez-evidence binary of this install
+.harness/hooks/	D	repo-copy	hook scripts of this install
+.harness/hook-backups/	B	repo-local	hooks that were there before the install
+.harness/config.json	B	repo-local	install config with absolute paths
+.harness/install-manifest.json	B	repo-local	what this machine installed
+.harness/evidence/	B	repo-local	ledger and proof logs, bound to this machine's trees
+.harness/run-report.jsonl	E	export	one row per gate command
+.harness/run-report.md	B	repo-local	view generated from run-report.jsonl
+.harness/loops/	B	repo-local	loop locks and day state
+.harness/journal/	B	repo-local	loop journals
+.harness/cos/	B	repo-local	chief-of-staff pickup notes
+.harness/fast-lint*	B	repo-local	fast-lint cache and log
+.harness/tmp/	B	repo-local	scratch for runtime verification
+.harness/lesson-sync.deny	C	repo-local	private words of this machine
+.harness/.lesson-sync*	B	repo-local	lesson sync stamps, lock, backups
+.claude/settings.json	D	repo-copy	hook entries merged into project settings
+.claude/skills/	D	repo-copy	skills (ezh and the kit)
+.claude/agents/	D	repo-copy	kit agents
+.claude/loops/	D	repo-copy	kit loop wrappers
+.agents/skills/ezh/	D	repo-copy	the ezh skill for Codex
+.opencode/skills/ezh/	D	repo-copy	the ezh skill for OpenCode
+.codex/rules/ezharness.rules	D	repo-copy	Codex rules
+opencode.json	D	repo-copy	managed keys merged
+.gitignore	D	repo-copy	lines generated from this table
+AGENTS.md	A	repo-tracked	one pointer line and the generated lesson index block
+CLAUDE.md	A	repo-tracked	the generated lesson index block
+docs/feature-map.md	A	repo-tracked	table generated from the tree by the kit
+~/.local/share/ezh/inbox/	C	machine	lessons waiting for a home
+~/.local/share/ezh/bin/	D	machine	a locally built binary for the plugin
+~/.config/ezh/workspaces	C	machine	folders the plugin acts in
+~/.config/ezh/lesson-sync.deny	C	machine	private words for the inbox
+~/.config/ezh/lesson-route	C	machine	"on" lets Stop move new memories to the inbox (default off)
+~/.cache/ezh/sessions/	C	machine	per-session cache of the route hook
+src/plugins/ezh/	D	plugin	hooks, plan gate and the ezh skill
