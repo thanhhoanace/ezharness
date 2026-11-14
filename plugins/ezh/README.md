@@ -9,8 +9,8 @@ ezh adds four things to every Claude Code session, in the terminal and in VS Cod
 | Skill `ezh` | How to use the evidence gate, plans and lessons. |
 | `/ez-doctor` | A read-only check of this machine and of the workspaces. |
 
-The `ez-evidence` binary for macOS (arm64, amd64), Linux (amd64, arm64) and Windows (amd64)
-ships inside the plugin (`libexec/`). Nothing is downloaded at run time.
+The `ez-evidence` binary for macOS (arm64, amd64) and Linux (amd64, arm64) ships inside the
+plugin (`libexec/`). Nothing is downloaded at run time. Windows is not supported yet.
 
 ## Source and rebuild
 
@@ -25,9 +25,8 @@ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=false \
 shasum -a 256 /tmp/ez-evidence-linux-amd64    # equals the line in ../../libexec/BUILD
 ```
 
-`GOOS`/`GOARCH` pairs: `darwin/arm64`, `darwin/amd64`, `linux/amd64`, `linux/arm64`,
-`windows/amd64` (output name ends in `.exe`). `source_commit` in `BUILD` is the commit of the
-development repository the tree was built from.
+`GOOS`/`GOARCH` pairs: `darwin/arm64`, `darwin/amd64`, `linux/amd64`, `linux/arm64`.
+`source_commit` in `BUILD` is the commit of the development repository the tree was built from.
 
 ## Install
 
@@ -45,7 +44,7 @@ development repository the tree was built from.
 |---|---|
 | macOS | git; python 3 (the Xcode command line tools bring both) |
 | Linux | bash, git, python 3 |
-| Windows | **Git for Windows** (Claude Code runs the hooks in its Git Bash) and Python 3 from python.org or `winget install Python.Python.3.12`. Status: **not yet verified on a real Windows machine.** |
+| Windows | Not supported yet: the plugin ships no Windows binary, so `/ez-doctor` reports it missing and the plan gate blocks a prompt that names a plan. |
 
 Without python the plan gate still runs; the lesson index is off and session start says so.
 
