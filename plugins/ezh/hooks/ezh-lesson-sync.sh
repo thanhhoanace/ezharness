@@ -61,7 +61,7 @@ fi
 # EZH_WS: the vault to write (the lesson-inbox loop's --apply worktree, or a caller
 # that names one); without it the hook serves the workspace it was installed into.
 # ezh-route.sh never sets it: the plugin route always writes the inbox (ADR-0015 #6).
-WS="${EZH_WS:-$(cd "$HOOK_DIR/../.." && pwd -P)}"
+WS="${EZH_WS:-$(dirname "$(dirname "$HOOK_DIR")")}"
 HARNESS="$WS/.harness"
 LESSONS="$HARNESS/lessons"
 STAMP="$HARNESS/.lesson-sync.stamp"
@@ -134,7 +134,7 @@ PY
   root="$cwd"
   common="$(git -C "$cwd" rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)"
   if [ -n "$common" ]; then
-    root="$(cd "$common/.." 2>/dev/null && pwd -P || printf '%s' "$cwd")"
+    root="$(cd "$(dirname "$common")" 2>/dev/null && pwd -P || printf '%s' "$cwd")"
   fi
   for candidate in "$root" "$cwd"; do
     slug="$(printf '%s' "$candidate" | sed 's/[^A-Za-z0-9]/-/g')"

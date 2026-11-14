@@ -62,10 +62,11 @@ done
 if [ "${#WORKSPACES[@]}" -eq 0 ] && [ -f "$HERE/_owners.sh" ]; then
   # shellcheck source=/dev/null
   . "$HERE/_owners.sh"
+  WS_LIST="$(ezh_owner_workspaces)"
   while IFS= read -r w; do
     [ -n "$w" ] && WORKSPACES+=("$w")
   done <<EOF_WS
-$(ezh_owner_workspaces)
+$WS_LIST
 EOF_WS
 fi
 
@@ -95,7 +96,7 @@ if ezh_has_py; then
 else
   env_line PROBLEM python "no working python 3 (tried python3, python, py -3): lesson index and lesson route are off"
 fi
-PLUGIN_DIR="$(cd "$HERE/.." 2>/dev/null && pwd -P)"
+PLUGIN_DIR="$(dirname "$HERE")"
 if [ -d "$PLUGIN_DIR/libexec" ]; then
   if BIN="$(ezh_plugin_bin "$PLUGIN_DIR")"; then
     if "$BIN" capabilities >/dev/null 2>&1; then

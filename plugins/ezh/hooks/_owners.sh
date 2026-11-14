@@ -52,14 +52,15 @@ ezh_lesson_route_on() {
 
 ezh_in_workspace() {
   # ezh_in_workspace <path>: exit 0 when <path> is inside a configured workspace.
-  local p ws
+  local p ws wss
   p="$(cd "$1" 2>/dev/null && pwd -P)" || return 1
+  wss="$(ezh_owner_workspaces)"
   while IFS= read -r ws; do
     [ -d "$ws" ] || continue
     ws="$(cd "$ws" && pwd -P)"
     case "$p/" in "$ws/"*) return 0 ;; esac
   done <<EOF_WS
-$(ezh_owner_workspaces)
+$wss
 EOF_WS
   return 1
 }
@@ -83,13 +84,14 @@ ezh_is_main_worktree() {
 ezh_workspace_find() {
   # ezh_workspace_find <suffix>: paths ending in /<suffix> at most 5 levels under a
   # workspace (a repo at most 3 deep); never inside .git, node_modules or .worktrees.
-  local ws
+  local ws wss
+  wss="$(ezh_owner_workspaces)"
   while IFS= read -r ws; do
     [ -d "$ws" ] || continue
     find "$ws" -maxdepth 5 \( -name .git -o -name node_modules -o -name .worktrees \) -prune \
       -o -path "*/$1" -print 2>/dev/null
   done <<EOF_WS
-$(ezh_owner_workspaces)
+$wss
 EOF_WS
   return 0
 }
@@ -99,7 +101,8 @@ ezh_owner_repos() {
   [ -f "$lesson" ] || return 0
   ezh_workspace_find .harness/lesson-owners.yaml | while IFS= read -r t; do
     [ -n "$t" ] && [ -f "$t" ] || continue
-    repo="$(cd "$(dirname "$t")/.." && pwd -P)"
+    repo="$(dirname "$(dirname "$t")")"
+    repo="$(cd "$repo" && pwd -P)"
     ezh_is_main_worktree "$repo" && printf '%s\t%s\n' "$repo" "$t"
   done | ezh_py -c '
 import fnmatch, re, sys

@@ -106,7 +106,7 @@ repos = set()
 for d in sys.stdin.read().splitlines():
     if "/_fixtures/" in d + "/" or not os.path.isdir(d):
         continue
-    top = os.path.realpath(os.path.join(d, "..", ".."))
+    top = os.path.realpath(os.path.dirname(os.path.dirname(os.path.realpath(d))))
     if top not in repos and main_worktree(top):
         repos.add(top)
 wss = sorted({os.path.realpath(w) for w in os.environ["EZH_IDX_WS"].splitlines() if os.path.isdir(w)},
@@ -187,14 +187,14 @@ case "$event" in
     key="$(printf '%s|%s' "$tsize" "$input" | cksum | tr -d ' ')"
     ezh_once "$sid" stop "$key" || exit 0
     # Only memory files this session wrote and that still sit in memory.
-    owned=""
+    owned="" listed="$(ezh_owned_memory "$sid")"
     while IFS= read -r f; do
       [ -n "$f" ] || continue
       # Gone (moved, or deleted by hand): a file created later at that path is not ours.
       if [ -f "$f" ]; then owned="$owned$f
 "; else ezh_disown_memory "$sid" "$f"; fi
     done <<EOF_OWNED
-$(ezh_owned_memory "$sid")
+$listed
 EOF_OWNED
     [ -n "$owned" ] || exit 0
     # Only inside a configured workspace: elsewhere a project memory is not ours.

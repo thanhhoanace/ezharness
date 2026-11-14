@@ -41,7 +41,7 @@ ezh_cache_root() {
 ezh_session_dir() {
   # Session ids come from Claude Code; refuse anything that could leave the cache.
   case "$1" in
-    ''|*/*|.|..) return 1 ;;
+    ''|*/*|.|.[.]) return 1 ;;
   esac
   printf '%s/%s' "$(ezh_cache_root)" "$1"
 }

@@ -61,7 +61,11 @@ if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
 fi
 # Installed mode: this script lives in <ws>/.harness/hooks/.
 INST_WS=""
-[ "$PLUGIN_MODE" = 0 ] && INST_WS="$(cd "$SELF_DIR/../.." 2>/dev/null && pwd -P)"
+if [ "$PLUGIN_MODE" = 0 ] && [ -n "$SELF_DIR" ]; then
+  INST_WS="$(dirname "$SELF_DIR")"
+  INST_WS="$(dirname "$INST_WS")"
+  INST_WS="$(cd "$INST_WS" 2>/dev/null && pwd -P)"
+fi
 
 # The plugin hook and a project hook must see each other's per-turn key, but
 # _route.sh puts the cache under $CLAUDE_PLUGIN_DATA, which only the plugin has.
@@ -120,9 +124,9 @@ add_repo() { # add_repo <absolute git common dir>: main checkout + linked worktr
 
 add_repo_of() { # add_repo_of <folder>: the work tree it sits in first, then its repo
   local out top common
-  out="$(git -C "$1" rev-parse --path-format=absolute --show-toplevel --git-common-dir 2>/dev/null)" || return 0
-  top="${out%%"$NL"*}"; common="${out#*"$NL"}"
-  [ -n "$top" ] && [ "$top" != "$out" ] || return 0
+  top="$(git -C "$1" rev-parse --path-format=absolute --show-toplevel 2>/dev/null)" || return 0
+  common="$(git -C "$1" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)" || return 0
+  [ -n "$top" ] && [ -n "$common" ] || return 0
   REPO_TOP="$top" REPO_MAIN=""
   case "$common" in */.git) REPO_MAIN="${common%/.git}" ;; esac
   add_dir "$top/.harness/plans" "$REPO_MAIN"
@@ -139,13 +143,17 @@ WORKSPACES="" SCAN=""
 # Only a session that stands inside a workspace looks at the workspace's plans:
 # a prompt in an unrelated folder must never be checked, or blocked, by them.
 [ "$HAVE_OWNERS" = 1 ] && [ -n "$WORKSPACES" ] && ezh_in_workspace "$CWD" && SCAN="$WORKSPACES"
-while IFS= read -r ws; do                               # (b) repos under the workspaces
-  [ -n "$ws" ] && [ -d "$ws" ] || continue
+scan_ws() { # scan_ws <workspace>: add every repo below it (b)
+  local gits g
+  gits="$(find "$1" -maxdepth 5 \( -name node_modules -o -name .worktrees \) -prune -o -name .git -type d -print -prune 2>/dev/null | sort)"
   while IFS= read -r g; do
     [ -n "$g" ] && add_repo "$g"
   done <<EOF_G
-$(find "$ws" -maxdepth 5 \( -name node_modules -o -name .worktrees \) -prune -o -name .git -type d -print -prune 2>/dev/null | sort)
+$gits
 EOF_G
+}
+while IFS= read -r ws; do                               # (b) repos under the workspaces
+  [ -n "$ws" ] && [ -d "$ws" ] && scan_ws "$ws"
 done <<EOF_WS
 $SCAN
 EOF_WS
@@ -191,10 +199,13 @@ while IFS= read -r p; do
   # The plugin runs in every session: there only the canonical home counts, so a
   # file under some other tool's plans/ folder is never linted as a plankit plan.
   if [ "$PLUGIN_MODE" = 1 ]; then case "$f" in */.harness/plans/*) ;; *) continue ;; esac; fi
-  case "$(basename "$f")" in PLAN-TEMPLATE.md) continue ;; esac
-  f="$(cd "$(dirname "$f")" && pwd -P)/$(basename "$f")"
+  fbase="$(basename "$f")"
+  case "$fbase" in PLAN-TEMPLATE.md) continue ;; esac
+  fdir="$(dirname "$f")"
+  fdir="$(cd "$fdir" && pwd -P)"
+  f="$fdir/$fbase"
   add_file "$f" "" ""
-  EXPLICIT="$EXPLICIT$(basename "$f" .md)$NL"
+  EXPLICIT="$EXPLICIT${fbase%.md}$NL"
 done <<EOF_T
 $TOKENS
 EOF_T
@@ -266,6 +277,7 @@ $2
 EOF_M
 }
 if [ -n "$HITS" ]; then
+  SLUGS="$(printf '%s' "$HITS" | cut -f1 | sort -u)"
   while IFS= read -r slug; do
     [ -n "$slug" ] || continue
     group="$(printf '%s' "$HITS" | awk -F'\t' -v s="$slug" '$1==s')"
@@ -304,7 +316,8 @@ EOF_CH
         note_mine "$c_first" "$group"
       elif [ "$#" -eq 0 ] && [ -n "$tip" ]; then
         add_file "$tip" "$tip_main" ""
-        OLDER="${OLDER}${tip}${TAB}$((unchanged - 1))${NL}"
+        behind=$((unchanged - 1))
+        OLDER="${OLDER}${tip}${TAB}${behind}${NL}"
         note_mine "$tip" "$group"
       elif [ "$#" -eq 0 ]; then
         AMBIGUOUS="${AMBIGUOUS}  slug '$slug' names different plans, none on the default branch:$NL$paths"
@@ -315,7 +328,7 @@ EOF_CH
       add_file "$first" "$first_main" "$also"
     fi
   done <<EOF_S
-$(printf '%s' "$HITS" | cut -f1 | sort -u)
+$SLUGS
 EOF_S
 fi
 
@@ -354,7 +367,9 @@ find_bin() { # find_bin <plan-file> <main> -> sets BIN and SEARCHED
   SEARCHED="${pd%/*}/bin/ez-evidence"
   [ -n "$main" ] && SEARCHED="$SEARCHED$NL$main/.harness/bin/ez-evidence"
   if [ -n "$PLUGIN_DIR" ]; then
-    SEARCHED="$SEARCHED$NL$PLUGIN_DIR/libexec/ez-evidence-$(ezh_os_arch 2>/dev/null || echo unknown-os)$(ezh_exe_suffix)"
+    plat="$(ezh_os_arch 2>/dev/null)" || plat="unknown-os"
+    sfx="$(ezh_exe_suffix)"
+    SEARCHED="$SEARCHED$NL$PLUGIN_DIR/libexec/ez-evidence-$plat$sfx"
   fi
   [ -n "${CLAUDE_PLUGIN_DATA:-}" ] && SEARCHED="$SEARCHED$NL$CLAUDE_PLUGIN_DATA/bin/ez-evidence"
   SEARCHED="$SEARCHED$NL${XDG_DATA_HOME:-$HOME/.local/share}/ezh/bin/ez-evidence"
@@ -382,7 +397,8 @@ while IFS="$TAB" read -r f main also; do
   if find_bin "$f" "$main"; then
     PLAN_BINS="${PLAN_BINS}${f}${TAB}${BIN}${TAB}${also}${NL}"
   else
-    MISSING="${MISSING}  plan: $f${NL}$(printf '%s\n' "$SEARCHED" | sed 's/^/    searched: /')${NL}"
+    searched="$(printf '%s\n' "$SEARCHED" | sed 's/^/    searched: /')"
+    MISSING="${MISSING}  plan: $f${NL}${searched}${NL}"
   fi
 done <<EOF_F
 $FILES
@@ -405,8 +421,10 @@ fi
 if [ "$HAVE_ROUTE" = 1 ] && [ -n "$SID" ]; then
   tsize=0
   [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ] && tsize="$(wc -c < "$TRANSCRIPT" | tr -d ' ')"
-  psum="$(printf '%s' "$FILES" | cut -f1 | while IFS= read -r pf; do [ -n "$pf" ] && cksum < "$pf"; done | cksum | awk '{print $1}')"
-  key="$(printf '%s' "$PROMPT" | cksum | awk '{print $1"-"$2}')-$tsize-$psum"
+  plan_sums() { printf '%s' "$FILES" | cut -f1 | while IFS= read -r pf; do [ -n "$pf" ] && cksum < "$pf"; done; }
+  psum="$(plan_sums | cksum | awk '{print $1}')"
+  psig="$(printf '%s' "$PROMPT" | cksum | awk '{print $1"-"$2}')"
+  key="$psig-$tsize-$psum"
   ezh_once "$SID" plan-gate "$key" || exit 0
 fi
 
@@ -421,7 +439,8 @@ while IFS="$TAB" read -r f bin also; do
   STATUS=$?
   NOTES=""
   if [ "$also" != - ]; then
-    NOTES="same content, also at:$NL$(printf '%s\n' "$also" | tr '|' '\n' | sed 's/^/  /')$NL"
+    alsolist="$(printf '%s\n' "$also" | tr '|' '\n' | sed 's/^/  /')"
+    NOTES="same content, also at:$NL$alsolist$NL"
   fi
   mine="$(printf '%s' "$MINE" | awk -F'\t' -v f="$f" '$1==f {print $2; exit}')"
   if [ -n "$mine" ]; then
