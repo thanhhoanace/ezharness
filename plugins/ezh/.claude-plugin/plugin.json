@@ -1,6 +1,6 @@
 {
   "name": "ezharness",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "ezHarness for Claude Code on macOS and Linux: a plan gate that validates the plan a prompt names, the lesson index at session start, the ezh skill and /ez-doctor. The ez-evidence binary for each OS ships inside the plugin.",
   "author": {
     "name": "thanhhoanace"

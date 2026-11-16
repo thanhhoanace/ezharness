@@ -57,6 +57,30 @@ a folder that holds many repos (and to see its lesson index), list that folder:
 mkdir -p ~/.config/ezh && echo /path/to/folder >> ~/.config/ezh/workspaces
 ```
 
+## Privacy
+
+ezharness collects nothing and sends nothing over the network. There is no account, no
+telemetry and no server. Everything below happens on your machine:
+
+| It reads | Why |
+|---|---|
+| The text of your prompt | to find the plan name (`.harness/plans/<slug>.md`) it should check |
+| Plan and lesson files in your repos | to validate the plan, and to list reviewed lessons |
+| The size of the session transcript, never its content | to check a plan again when the session moved on |
+| Claude Code `settings.json` (one key: `autoMemoryDirectory`) and the session's memory folder | to find memories that may become lessons |
+| `~/.config/ezh/` | your workspace list and switches |
+
+| It writes | Where |
+|---|---|
+| A runnable copy of `ez-evidence` when the installed one lost its exec bit | the plugin data folder (`${CLAUDE_PLUGIN_DATA}`) |
+| A small per-session cache (hashes, so it does not check the same prompt twice) | `~/.cache/ezh/sessions/` |
+| Memories moved to the lesson inbox, only when `lesson-route` is `on` (off by default) | `~/.local/share/ezh/inbox/` |
+
+It does not look for, use or send API keys, tokens or passwords; from `settings.json` it uses
+only the one key above. The hooks and the `ez-evidence` binary run
+only the local commands `git`, `python3` and standard shell tools. The Go source of `ez-evidence`
+ships in `source/` (see above).
+
 ## Switches
 
 | Variable or file | Effect |
