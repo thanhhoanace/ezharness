@@ -1,6 +1,6 @@
-# ezh — ezHarness plugin for Claude Code
+# ezharness — ezHarness plugin for Claude Code
 
-ezh adds four things to every Claude Code session, in the terminal and in VS Code:
+ezharness adds four things to every Claude Code session, in the terminal and in VS Code:
 
 | Piece | What it does |
 |---|---|
@@ -32,7 +32,7 @@ shasum -a 256 /tmp/ez-evidence-linux-amd64    # equals the line in ../../libexec
 
 ```text
 /plugin marketplace add thanhhoanace/ezharness
-/plugin install ezh@ezharness
+/plugin install ezharness@ezharness
 /ez-doctor
 ```
 

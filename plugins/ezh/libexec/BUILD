@@ -1,5 +1,5 @@
-plugin_version=0.3.3
-source_commit=21095e5d5eed1ecb94dec6009df119116e3ed43e
+plugin_version=0.4.0
+source_commit=28de12bbb7f2b0fc7280f4cd9e0378f71573cc08
 source_dirty=false
 go=go1.26.2
 sha256 ez-evidence-darwin-arm64 2a8218f1bc381ead90807af6e08c3df38c98e30dea815618a664337b037c346c
